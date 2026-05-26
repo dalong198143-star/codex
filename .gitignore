@@ -1,0 +1,24 @@
+﻿# Python 依赖管理
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# 环境文件
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+Thumbs.db
+.DS_Store
+
+# 日志
+*.log

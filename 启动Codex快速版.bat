@@ -1,7 +1,7 @@
-@echo off
+﻿@echo off
 
 :: GitHub token for gh CLI
-set "GITHUB_TOKEN=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"
+set "GITHUB_TOKEN=YOUR_GITHUB_TOKEN_HERE"
 
 title Codex Quick Start
 
@@ -39,4 +39,5 @@ echo.
 echo Launching Codex...
 codex -C D:\maozhua\Codex -c model="deepseek-v4" -c model_provider="local-deepseek"
 pause
+
 

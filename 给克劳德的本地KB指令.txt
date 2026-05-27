@@ -1,0 +1,6 @@
+﻿# 克劳德的知识库指引
+# 知识库架构已重构，详见: D:\hermes-tools\KB_ARCHITECTURE.md
+# 
+# 写入: python D:/hermes-tools/scripts/add_to_kb.py "内容" topic [标题]
+# 查询: python D:/hermes-tools/scripts/query_kb.py "查询内容" [-t topic] [-n 条数]
+# topic: ai-coding, ai-models, prompt-engineering, methodology, kb-system, knowledge-management, 行业百态

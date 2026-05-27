@@ -1,0 +1,19 @@
+{
+  "session_id": "manual-20260523",
+  "learned_skills": [
+    "OOXML注释系统三件套",
+    "Presentations 11步工作流 + 8种deck-profile",
+    "docx_ooxml_patch.py用法",
+    "npm镜像加速"
+  ],
+  "successful_patterns": [
+    "大脚本拆分法: 分多个文件逐步构建",
+    "模板优先法: 先看skill文档再动手",
+    "自检清单法: 交付前做结构化检查"
+  ],
+  "avoided_pitfalls": [
+    "PowerShell变量隔离 → 合并操作到同一块",
+    "Python路径反斜杠 → 用正斜杠",
+    "npm慢 → 用淘宝镜像"
+  ]
+}

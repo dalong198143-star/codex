@@ -1,24 +1,35 @@
-﻿# Python 依赖管理
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
+﻿# ⚠️ 安全：包含真实 API Key 的环境变量文件
+.env.bat
 
-# 环境文件
-.env
-.env.local
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
-*.swo
-
-# 系统
-Thumbs.db
-.DS_Store
 
 # 日志
 *.log
+
+# Docker
+.docker/
+
+# 运行时调试文件
+_chunks_debug.log
+_proof.log
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 临时
+temp_git_push/
+.codex_temp_test/
+outputs/
+.backup/
+.git_backup_*

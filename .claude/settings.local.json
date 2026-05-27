@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python D:/hermes-tools/scripts/query_kb.py *)",
+      "Bash(python D:/hermes-tools/scripts/add_to_kb.py *)"
+    ]
+  }
+}

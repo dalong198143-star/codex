@@ -19,17 +19,12 @@ venv/
 # Docker
 .docker/
 
-# 运行时调试文件
-_chunks_debug.log
-_proof.log
+# 临时目录
+temp_git_push/
+.codex_temp_test/
+outputs/
+.git_backup_*/
 
 # 系统
 .DS_Store
 Thumbs.db
-
-# 临时
-temp_git_push/
-.codex_temp_test/
-outputs/
-.backup/
-.git_backup_*

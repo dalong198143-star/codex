@@ -1,0 +1,6 @@
+content = open("D:\\maozhua\\Codex\\codex\\scripts\\monitor\\main.py").read()
+print("night_mode:", "_night_mode = _now_c().hour" in content)
+print("_rss_cache:", "_rss_cache" in content)
+print("Bing[]:", "[] if _night_mode else bing_search" in content)
+print("Google[]:", "[] if _night_mode else google_news" in content)
+import ast; ast.parse(content); print("编译OK")

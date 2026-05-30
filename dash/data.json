@@ -1,0 +1,730 @@
+{
+  "total_fetched": 635,
+  "total_new": 153,
+  "total_dedup": 206,
+  "total_scans": 333,
+  "cooling": 1,
+  "nodes": [
+    {
+      "name": "海缆: 全球动态",
+      "total": 82,
+      "new": 19,
+      "history": [
+        8,
+        4,
+        6,
+        0,
+        3,
+        6,
+        3,
+        5,
+        3,
+        1,
+        2,
+        1,
+        3,
+        8,
+        4,
+        5,
+        8,
+        2,
+        4,
+        1,
+        2,
+        2,
+        4,
+        8
+      ]
+    },
+    {
+      "name": "卫星: 互联网",
+      "total": 72,
+      "new": 22,
+      "history": [
+        3,
+        5,
+        5,
+        2,
+        4,
+        2,
+        1,
+        4,
+        0,
+        2,
+        0,
+        7,
+        1,
+        5,
+        4,
+        6,
+        1,
+        3,
+        4,
+        8,
+        6,
+        7,
+        1,
+        7
+      ]
+    },
+    {
+      "name": "IXP: 法兰克福 (DE-CIX)",
+      "total": 72,
+      "new": 13,
+      "history": [
+        2,
+        8,
+        6,
+        8,
+        6,
+        3,
+        6,
+        5,
+        6,
+        1,
+        6,
+        6,
+        5,
+        2,
+        1,
+        6,
+        5,
+        0,
+        1,
+        2,
+        2,
+        0,
+        8,
+        5
+      ]
+    },
+    {
+      "name": "AI: 基础设施投资",
+      "total": 69,
+      "new": 25,
+      "history": [
+        4,
+        7,
+        0,
+        2,
+        5,
+        8,
+        7,
+        5,
+        4,
+        7,
+        6,
+        7,
+        7,
+        5,
+        5,
+        8,
+        2,
+        8,
+        0,
+        7,
+        3,
+        6,
+        7,
+        4
+      ]
+    },
+    {
+      "name": "非洲: 互联网基建",
+      "total": 48,
+      "new": 10,
+      "history": [
+        1,
+        2,
+        0,
+        1,
+        3,
+        4,
+        3,
+        4,
+        1,
+        1,
+        2,
+        0,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        1,
+        1,
+        2,
+        1,
+        0,
+        4
+      ]
+    },
+    {
+      "name": "政策: 互联网监管",
+      "total": 48,
+      "new": 18,
+      "history": [
+        3,
+        1,
+        0,
+        3,
+        1,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3,
+        0,
+        2,
+        4,
+        1,
+        4,
+        3,
+        3,
+        4,
+        2
+      ]
+    },
+    {
+      "name": "中东: 数字化枢纽",
+      "total": 48,
+      "new": 10,
+      "history": [
+        2,
+        3,
+        4,
+        2,
+        0,
+        2,
+        0,
+        4,
+        0,
+        2,
+        3,
+        0,
+        4,
+        3,
+        2,
+        3,
+        1,
+        3,
+        0,
+        2,
+        3,
+        2,
+        2,
+        4
+      ]
+    },
+    {
+      "name": "IXP: 伦敦 (LINX)",
+      "total": 48,
+      "new": 10,
+      "history": [
+        4,
+        4,
+        3,
+        3,
+        4,
+        3,
+        2,
+        4,
+        3,
+        4,
+        3,
+        1,
+        3,
+        4,
+        0,
+        0,
+        3,
+        3,
+        4,
+        2,
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "name": "数据中心: 全球投资",
+      "total": 39,
+      "new": 10,
+      "history": [
+        0,
+        2,
+        0,
+        0,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        0,
+        1,
+        3,
+        3,
+        4,
+        3,
+        1,
+        0,
+        1,
+        4,
+        2,
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "name": "IXP: 东京",
+      "total": 32,
+      "new": 4,
+      "history": [
+        0,
+        2,
+        3,
+        3,
+        4,
+        1,
+        3,
+        2,
+        2,
+        0,
+        2,
+        0,
+        3,
+        0,
+        0,
+        3,
+        2,
+        2,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "IXP: 新加坡 (SGIX)",
+      "total": 29,
+      "new": 8,
+      "history": [
+        4,
+        3,
+        2,
+        1,
+        4,
+        3,
+        1,
+        0,
+        4,
+        0,
+        2,
+        0,
+        4,
+        3,
+        2,
+        2,
+        0,
+        3,
+        2,
+        4,
+        4,
+        1,
+        1,
+        3
+      ]
+    },
+    {
+      "name": "金融: 全球投资",
+      "total": 24,
+      "new": 2,
+      "history": [
+        0,
+        0,
+        4,
+        4,
+        4,
+        1,
+        4,
+        1,
+        0,
+        3,
+        1,
+        2,
+        0,
+        4,
+        3,
+        2,
+        0,
+        4,
+        2,
+        1,
+        2,
+        3,
+        2,
+        3
+      ]
+    },
+    {
+      "name": "数据中心: 北弗吉尼亚",
+      "total": 24,
+      "new": 2,
+      "history": [
+        3,
+        4,
+        0,
+        0,
+        2,
+        4,
+        4,
+        2,
+        1,
+        4,
+        1,
+        0,
+        2,
+        1,
+        4,
+        2,
+        4,
+        1,
+        2,
+        0,
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "name": "科技: 半导体与芯片",
+      "total": 0,
+      "new": 0,
+      "history": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "科技: AI 创业生态",
+      "total": 0,
+      "new": 0,
+      "history": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "last_scan": "2026-05-30T12:02",
+  "trend": [
+    {
+      "hour": "00",
+      "fetched": 2,
+      "new": 0
+    },
+    {
+      "hour": "02",
+      "fetched": 2,
+      "new": 0
+    },
+    {
+      "hour": "04",
+      "fetched": 4,
+      "new": 0
+    },
+    {
+      "hour": "06",
+      "fetched": 4,
+      "new": 0
+    },
+    {
+      "hour": "08",
+      "fetched": 3,
+      "new": 0
+    },
+    {
+      "hour": "10",
+      "fetched": 2,
+      "new": 0
+    },
+    {
+      "hour": "12",
+      "fetched": 3,
+      "new": 1
+    },
+    {
+      "hour": "22",
+      "fetched": 2,
+      "new": 0
+    }
+  ],
+  "rss_sources": [
+    {
+      "name": "DCD Magazine (via Google News)",
+      "enabled": true
+    },
+    {
+      "name": "LightReading",
+      "enabled": true
+    },
+    {
+      "name": "Capacity Media",
+      "enabled": true
+    },
+    {
+      "name": "Cloudflare Blog",
+      "enabled": true
+    },
+    {
+      "name": "Internet Society",
+      "enabled": true
+    },
+    {
+      "name": "TechCrunch",
+      "enabled": true
+    },
+    {
+      "name": "ArsTechnica",
+      "enabled": true
+    },
+    {
+      "name": "The Verge",
+      "enabled": true
+    },
+    {
+      "name": "EFF (电子前哨基金会)",
+      "enabled": true
+    },
+    {
+      "name": "Google News - Business",
+      "enabled": true
+    },
+    {
+      "name": "CNBC Tech",
+      "enabled": true
+    },
+    {
+      "name": "Crunchbase News",
+      "enabled": true
+    },
+    {
+      "name": "VentureBeat",
+      "enabled": true
+    },
+    {
+      "name": "Wired",
+      "enabled": true
+    },
+    {
+      "name": "IEEE Spectrum",
+      "enabled": true
+    },
+    {
+      "name": "The Next Web",
+      "enabled": true
+    }
+  ],
+  "trend_full": {
+    "hours": [
+      "00:00",
+      "01:00",
+      "02:00",
+      "03:00",
+      "04:00",
+      "05:00",
+      "06:00",
+      "07:00",
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "12:00",
+      "13:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00",
+      "20:00",
+      "21:00",
+      "22:00",
+      "23:00"
+    ],
+    "values": [
+      9,
+      7,
+      4,
+      12,
+      7,
+      9,
+      3,
+      21,
+      27,
+      46,
+      31,
+      34,
+      21,
+      27,
+      45,
+      47,
+      49,
+      44,
+      15,
+      15,
+      22,
+      21,
+      13,
+      23
+    ]
+  },
+  "rss_activity": [
+    {
+      "name": "DCD Magazine (via Google News)",
+      "today": 4
+    },
+    {
+      "name": "LightReading",
+      "today": 6
+    },
+    {
+      "name": "Capacity Media",
+      "today": 5
+    },
+    {
+      "name": "Cloudflare Blog",
+      "today": 8
+    },
+    {
+      "name": "Internet Society",
+      "today": 3
+    },
+    {
+      "name": "TechCrunch",
+      "today": 11
+    },
+    {
+      "name": "ArsTechnica",
+      "today": 8
+    },
+    {
+      "name": "The Verge",
+      "today": 14
+    },
+    {
+      "name": "EFF (电子前哨基金会)",
+      "today": 5
+    },
+    {
+      "name": "Google News - Business",
+      "today": 15
+    },
+    {
+      "name": "CNBC Tech",
+      "today": 5
+    },
+    {
+      "name": "Crunchbase News",
+      "today": 13
+    },
+    {
+      "name": "VentureBeat",
+      "today": 7
+    },
+    {
+      "name": "Wired",
+      "today": 15
+    },
+    {
+      "name": "IEEE Spectrum",
+      "today": 12
+    },
+    {
+      "name": "The Next Web",
+      "today": 15
+    }
+  ],
+  "recent_logs": [
+    {
+      "time": "20:00:00",
+      "text": "日间模式 · 15节点全采集 · 215s",
+      "ok": true
+    },
+    {
+      "time": "18:02:14",
+      "text": "金融节点命中2条 · 入库KB",
+      "ok": true
+    },
+    {
+      "time": "16:01:08",
+      "text": "日间模式 · 15节点全采集 · 198s",
+      "ok": true
+    },
+    {
+      "time": "12:00:32",
+      "text": "日间模式 · 2节点SKIP(timeout)",
+      "ok": false
+    },
+    {
+      "time": "08:03:15",
+      "text": "凌晨→日间切换 · 参数已调整",
+      "ok": true
+    }
+  ]
+}

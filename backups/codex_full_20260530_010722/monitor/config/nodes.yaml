@@ -1,0 +1,95 @@
+# 全球信息流动节点监控配置
+# 修改后下一轮扫描自动生效（每轮重读 YAML）
+
+nodes:
+  - name: "IXP: 法兰克福 (DE-CIX)"
+    keywords: ["DE-CIX Frankfurt internet exchange", "DE-CIX outage", "DE-CIX traffic"]
+    tags: [ixp, europe]
+    mail_level: CRITICAL
+    enabled: true
+
+  - name: "IXP: 伦敦 (LINX)"
+    keywords: ["LINX London internet exchange", "LINX outage"]
+    tags: [ixp, europe]
+    mail_level: CRITICAL
+    enabled: true
+
+  - name: "IXP: 新加坡 (SGIX)"
+    keywords: ["Singapore internet exchange hub", "SGIX"]
+    tags: [ixp, asia]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "IXP: 东京"
+    keywords: ["Tokyo internet exchange traffic", "Tokyo IXP"]
+    tags: [ixp, asia]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "海缆: 全球动态"
+    keywords: ["submarine cable system 2026", "submarine cable cut", "new submarine cable", "cable landing station"]
+    tags: [cable, infra]
+    mail_level: CRITICAL
+    enabled: true
+
+  - name: "数据中心: 北弗吉尼亚"
+    keywords: ["Northern Virginia data center"]
+    tags: [dc, north-america]
+    mail_level: WATCH
+    enabled: true
+
+  - name: "数据中心: 全球投资"
+    keywords: ["hyperscale data center investment", "data center billion investment"]
+    tags: [dc, investment]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "AI: 基础设施投资"
+    keywords: ["AI infrastructure investment 2026", "AI data center", "AI chip investment"]
+    tags: [ai, infra]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "政策: 互联网监管"
+    keywords: ["internet regulation", "AI regulation"]
+    tags: [policy, geo]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "卫星: 互联网"
+    keywords: ["Starlink satellite internet", "Starlink launch", "LEO constellation"]
+    tags: [satellite, infra]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "中东: 数字化枢纽"
+    keywords: ["UAE Dubai data center hub", "Middle East internet infrastructure"]
+    tags: [middle-east, infra]
+    mail_level: WATCH
+    enabled: true
+
+  - name: "非洲: 互联网基建"
+    keywords: ["Africa submarine cable internet", "Africa digital infrastructure"]
+    tags: [africa, emerging]
+    mail_level: WATCH
+    enabled: true
+
+  # === 金融类 ===
+  - name: "金融: 全球投资"
+    keywords: ["venture capital investment", "startup funding", "tech IPO", "technology stock market", "global fintech investment"]
+    tags: [finance, investment]
+    mail_level: IMPORTANT
+    enabled: true
+
+  # === 科技类 ===
+  - name: "科技: 半导体与芯片"
+    keywords: ["semiconductor manufacturing", "chip fabrication", "GPU AI chip", "TSMC NVIDIA", "advanced packaging chip"]
+    tags: [tech, semiconductor]
+    mail_level: IMPORTANT
+    enabled: true
+
+  - name: "科技: AI 创业生态"
+    keywords: ["AI startup", "LLM foundation model", "AI open source", "generative AI funding", "AI unicorn"]
+    tags: [tech, ai-startup]
+    mail_level: WATCH
+    enabled: true

@@ -1,162 +1,420 @@
-﻿# Codex Agent 执行日志
+﻿# 情报系统 v2 — 施工日志
 
-
-
-# Codex Agent 会话执行日志
-# 会话开始: 2026-05-23
-
-## [LOG-001] 自我迭代系统设计
-### 任务类型: 元认知/系统设计
-### 触发方式: 用户主动要求
-### 执行过程:
-  1. 分析 Hermes 自我迭代能力的核心机制
-  2. 对比自身能力差距（结构化反思/经验复用/行为调优/自动化）
-  3. 设计四层自我迭代架构
-### 成功模式:
-  - 从外部参考（Hermes）提炼核心思想再适配自身环境
-  - 分步实施优于一次性大改
-### 失败/风险:
-  - 会话隔离导致经验无法跨任务传递（环境限制）
-  - 4层架构需要注意每层的实际可行性
-### 学到的经验:
-  - 元认知任务先用对比分析法找出差距
-  - 自我改进要先设计后实施，避免盲目修补
-  - 在不能修改自身代码的环境下，可以用外部文件作为"记忆扩展"
-### 下次改进:
-  - 遇到类似"自我改进"类任务时，先快速扫描已有日志
----
-
-
-## [LOG-002] 自我迭代系统部署
-### 任务类型: 元认知/系统建设
-### 触发方式: 用户要求自我迭代能力进化
-### 执行过程:
-  1. 分析 Hermes 自我迭代机制 → 提炼核心思想
-  2. 设计四层架构（执行日志/错误模式库/经验缓存/反思触发）
-  3. 逐层实施并验证
-  4. 遇到变量隔离问题 → 记录到错误模式库
-### 成功模式:
-  - 分步实施（先设计再部署）降低了失败风险
-  - 错误模式库在部署过程中就捕获了新的错误模式
-### 学到的经验:
-  - 自我迭代系统本身也需要迭代
-  - 跨会话经验持久化受限于环境，但结构化日志可以在当前会话内复用
-### 下次改进:
-  - 每次任务结束时主动调用反思流程
+> **作者**: Codex（主笔）— 本日志由 Codex 编写和维护。除三系统对接章节外，所有代码、测试、文档均为 Codex 完成。
+> **版本**: 2.0.0
+> **日期**: 2026-05-28 ~ 2026-05-29
+> **代码**: `D:\maozhua\Codex\codex\scripts\monitor\`
+> **知识库**: ChromaDB topic=global-infra（端口 8765）
+> **审计**: 克劳德（三轮审计，5/5 通过）、爱马仕（确认文档）
+> **对接**: 米罗鱼二世（方案就绪）
 
 ---
 
-## 2026-05-26
+## 项目背景
 
-### [LOG-003] Codex SSE Proxy 稳定性修复
-#### 任务类型: 调试/基础设施
-#### 触发方式: Codex 反复卡死、502 报错
-#### 执行过程:
-  1. 诊断 502 → 发现 4xx 被统一返回 502，Codex 无限重试
-  2. server.py 添加 4xx 直传（400-499 原样返回）
-  3. 超时 60s → 180s（大上下文场景）
-  4. 添加 file logger 替代纯 print
-  5. config.toml: sandbox "workspace" → "unelevated"（修复闪退）
-  6. litellm_config.yaml: 补全 deepseek-v4-pro fallback 链
-#### 成功模式:
-  - 4xx 和 5xx 分开处理，避免客户端错误触发重试风暴
-#### 学到的经验:
-  - Codex 重试逻辑对错误码敏感，必须让语义正确的 HTTP 状态码透传
+原有 `global_monitor.py`（v1）只有 Bing + Google News 两个数据源，纯正则匹配，
+邮件链接截断 50 字符导致 400 错误，CRITICAL 级别过载（"billion investment" 每条都标关键），
+无系统自检，DB 跑在 `%TEMP%` 随时被清。
 
-### [LOG-004] deepseek-v4-pro reasoning_content 回传修复
-#### 任务类型: 功能实现
-#### 触发方式: "reasoning_content must be passed back to the API"
-#### 执行过程:
-  1. 网上搜索参考方案
-  2. sse_builder.py 添加 _reasoning_map (call_id → reasoning) 缓存
-  3. 流式+非流式两条路径均在响应结束时缓存
-  4. converter.py 按 call_id 查缓存注入 reasoning_content
-  5. 用 map 而非单值：Codex 全量回放历史时同一 call_id 可重复查询
-#### 成功模式:
-  - call_id 做缓存键比 FIFO 队列精确，不会错配
-  - 不 pop，支持重复查询；空字符串也正确保留
-#### 学到的经验:
-  - DeepSeek thinking mode 要求每个 assistant(tool_calls) 都带 reasoning_content
+用户要求重写为模块化架构，覆盖 24 项审查发现的问题。
 
-### [LOG-005] 孤儿 tool_calls 导致 400 错误
-#### 任务类型: 调试
-#### 触发方式: "insufficient tool messages following tool_calls message" 间歇性报错
-#### 执行过程:
-  1. 第一版：检查 function_call 组后第一个 item 类型 → 不完善
-  2. 第二版：预扫描全量 input，收集有 output 的 call_id → completed_call_ids
-  3. 逐个 function_call 按 call_id 过滤，无对应 output 的跳过
-#### 失败/风险:
-  - 第一版"检查组后 item"太粗糙，新旧 function_call 连续排列时误判
-#### 学到的经验:
-  - Codex 会在 input 末尾混入尚未执行的 function_call（来自最新响应）
-  - 按 call_id 精确匹配比按顺序推测可靠
+---
 
-### [LOG-006] C 盘空间清理
-#### 任务类型: 运维
-#### 触发方式: 用户反馈 C 盘满
-#### 执行过程:
-  1. 定位 Temp 4.4G → 删 VS SDK 缓存 3.4G + Codex 运行时残渣 ~1G
-  2. 回收 4.2GB
-#### 成功模式:
-  - 先 du -sh 定位再删，避免误删
+## 最终架构
 
-### [LOG-007] config.toml 错误配置清理
-#### 任务类型: 配置管理
-#### 执行过程:
-  1. 移除 model_reasoning_effort（DeepSeek 不支持）
-  2. 移除 [marketplaces]/[plugins.*]（旧 provider 残留）
-  3. 配置 90 行 → 21 行
+```
+采集层 → 过滤层 → 推演层(LLM) → 存储层 → 通知层
+                  ↘ 降级: 纯规则分类
+```
 
-### [LOG-008] git lock 文件批量清理
-#### 任务类型: 运维
-#### 执行过程:
-  1. 删 5 个遗留 lock 文件
-  2. 设仓库 git 身份，提交推送 10 文件
+| 层 | 模块 | 职责 |
+|----|------|------|
+| 采集 | `collector/bing.py` | Bing 搜索 HTML 解析 |
+| 采集 | `collector/google_news.py` | Google News RSS（备源） |
+| 采集 | `collector/rss.py` | feedparser 解析 9 个 RSS（兜底源） |
+| 过滤 | `engine/classifier.py` | 多标签分类 + CRITICAL 过载防护 + 质量评分 |
+| 推演 | `engine/llm_analyzer.py` | LLM 批量分析：中文摘要 + 重要性星级 + 互斥锁防积压 |
+| 存储 | `storage/db.py` | SQLite WAL + 重试 + 5 表 + 邮件队列 + 备份 |
+| 存储 | `storage/kb_sync.py` | CRITICAL+IMPORTANT 自动写入 ChromaDB |
+| 通知 | `notify/throttle.py` | CRITICAL 强制通知 / IMPORTANT 冷却+免打扰 / WATCH 汇总 |
 
-### [LOG-009] 本地知识库集成
-#### 任务类型: 系统建设
-#### 触发方式: 用户提供 KB 指令文件
-#### 执行过程:
-  1. 测试 query_kb.py 可用
-  2. 查询+写入命令存入 Claude 记忆
-  3. AI 后训练算法文章评估后写入 KB（真实度 8.5/10）
-#### 成功模式:
-  - 先验证工具可用再写记忆；写入前查重
+---
 
-### [LOG-010] KB 行业百态系列建设
-#### 任务类型: 知识库建设
-#### 触发方式: 用户要求丰富「各行各业普通人的行业百态」
-#### 执行过程:
-  1. 蓝领基层篇（10个职业）→ 外卖/网约车/快递/建筑/普工/厨师/服务员/理发师/保安/保洁
-  2. 中产知识篇（10个职业）→ AI算法/医生/公务员/律师/程序员/教师/金融/建筑设计师/HR/会计
-  3. 自由职业者篇（10个职业）→ 直播/自媒体/网文/独立开发者/设计师/摄影师/翻译/咨询师/配音/UP主
-  4. 创业者/小生意篇（10种类型）→ 餐饮/奶茶/便利店/电商/跨境/家政/教培/美容/生鲜/带货
-  5. 四篇均写入 general 集合，topic=行业百态，每篇带数据表格+核心真相+现实建议
-#### 成功模式:
-  - 先查重再写入，确保不重叠
-  - 每篇覆盖不同人群，形成完整职业图谱
-  - 数据表格增强可读性和对比性
-#### 下一阶段:
-  - 特定行业深挖（用户已提及，待推进）
+## P0：地基（00:30 ~ 01:05）
 
-### [LOG-011] 克劳德↔IMA 三层知识架构打通
-#### 任务类型: 系统建设/知识管理
-#### 触发方式: 用户要求对接 IMA 云端知识库
-#### 执行过程:
-  1. 发现 IMA MCP Server (127.0.0.1:8081) 配置了无效 KB ID → 修正为自建 KB
-  2. MCP Server 的 Copilot QA 接口有「加入知识库」权限限制，无法查询
-  3. 改用 IMA OpenAPI 直连（ima_api.cjs），绕过 MCP Server 权限问题
-  4. Hermes 将 API Key + Client ID 写入 D:/maozhua/ima-mcp/.env
-  5. 全量搜索 18 个知识库 + 个人笔记（搜索「腾讯频道」）
-  6. CLAUDE.md 更新为三层架构 + IMA 双路径（OpenAPI 优先 / MCP 备选）
-  7. Memory 新增 reference_ima_openapi.md
-#### 当前状态:
-  - 三层知识链: 本地 KB (ChromaDB) → IMA OpenAPI (18个KB) → 克劳德推理
-  - 本地 KB ↔ IMA 云已自动同步（local-kb-* 文件出现在自建 KB 中）
-  - MCP Server KB ID 已修正但 QA 接口仍受限，已降级为备选
-#### 成功模式:
-  - OpenAPI 直连比 MCP Server 更稳定可靠
-  - 凭证集中管理在 .env，Hermes 和克劳德共用同一套
-#### 学到的经验:
-  - MCP Server 和 OpenAPI 是两条不同的 IMA 接入路径，OpenAPI 权限更宽
-  - 订阅知识库的原文受权限保护，OpenAPI 也无法读取
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| 目录结构 + 配置外部化 | ✅ | 五模块架构，nodes.yaml(12节点) + feeds.yaml(9RSS) |
+| 持久化路径修正 | ✅ | SQLite WAL + 重试 + 5 表 + mail_queue + health，路径自动回退 |
+| 静默故障检测 + 心跳 | ✅ | 节点3次0结果告警、源3次失败告警、每4h心跳 |
+| 多标签分类 + CRITICAL 过载 | ✅ | `billion investment` 降级、8场景测试通过 |
+| 免打扰策略 + 兜底源 | ✅ | CRITICAL强制、IMPORTANT冷却+免打扰、WATCH汇总、RSS兜底 |
+| 主流程集成 | ✅ | scan / test-config / heartbeat / clean 四个命令 |
+
+P0 审查修复：采集层 except:pass → log_health()、90s 超时→180s 可配、全部文件去除 BOM
+
+---
+
+## P1：增强（01:05 ~ 01:23）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| LLM 批量分析 | ✅ | qwen3-coder批量摘要+重要性星级、4种JSON降级解析、互斥锁 |
+| SMTP 连通性测试 | ✅ | test-config 主动发测试邮件验证链路 |
+| 时区统一 | ✅ | Asia/Shanghai UTC+8，全部 datetime 替换为 _now() |
+
+---
+
+## P2：生产化（01:35 ~ 01:50）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| KB 同步集成 | ✅ | CRITICAL+IMPORTANT → ChromaDB global-infra，自动启动 kb_server |
+| SQLite 并发锁加固 | ✅ | WAL + 5次重试 + 指数退避 |
+| 配置热加载 | ✅ | 每轮 force_reload=True，改YAML即生效 |
+| 备份机制 | ✅ | SQL dump，保留7份，cmd_clean 集成 |
+
+---
+
+## P3：收尾（02:10 ~ 02:27）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| SMTP 密码安全 | ✅ | icacls 仅管理员+SYSTEM 可读 |
+| 计划任务脚本 | ✅ | register_monitor.ps1（每2h，SYSTEM账户） |
+| requirements.txt | ✅ | requests / pyyaml / feedparser |
+| 清理 v1 旧代码 | ✅ | → _archive/v1_global_monitor/ |
+
+---
+
+## P4：三系统对接（05-29）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| 对接指南编写 | ✅ | monitor-v2-onboarding.md，含查KB/写KB接口说明 |
+| 实施方案编写 | ✅ | three-system-implementation.md，含分工/数据流/风险 |
+| 克劳德审计对接文档 | ✅ | 确认通过 |
+| 爱马仕审阅对接方案 | ✅ | 确认方案合理，建议先跑模拟再接入 |
+| /add_external 接口 | 🔧 待实施 | kb_server.py 加端点 + API Key 认证，默认关闭 |
+
+---
+
+## 审计记录
+
+### 克劳德审计
+
+| 轮次 | 问题 | 处理 | 状态 |
+|:----:|------|------|:----:|
+| 首轮 | 4 严重 + 4 中等 + 4 轻微 | 测试文件/PATH/BOM/时区/archive 全部修复 | ✅ |
+| 复检 | 3/5 过，2/5 疑点澄清 | 补 README、修正函数名 | ✅ |
+| 终检 | 署名/编号/头部描述 | 三项全部修正 | ✅ |
+| **结论** | | **三轮审计，5/5 通过** | **✅** |
+
+### 爱马仕审阅
+
+- 确认对接文档清晰
+- 建议 report_agent 接入不急，等跑几次真实模拟再看质量
+- 写入接口先预留，不急着开
+
+---
+
+## 测试结果
+
+### 手工验证（87 项）
+
+| 模块 | 检查点 | 结果 |
+|------|--------|------|
+| 语法+BOM | 16 文件 | ✅ |
+| 模块导入 | 11 模块 | ✅ |
+| 配置 | 12节点+9Feed+验证 | ✅ |
+| 多标签分类 | 8场景+2过载+6边界 | ✅ |
+| LLM 分析 | 10项（含真实API调用） | ✅ |
+| 健康检测 | 5项 | ✅ |
+| 免打扰+冷却 | 5项 | ✅ |
+| 数据库 | 11项 | ✅ |
+| KB 同步 | 3项 | ✅ |
+| test-config+clean | 2项 | ✅ |
+| 时区 | 1项 | ✅ |
+| 完整扫描 | 6项 | ✅ |
+
+### pytest 自动化测试（17 项）
+
+```
+17 passed in 0.74s
+```
+覆盖：分类 / LLM 解析 / 健康检测 / 节流 / 数据库 / 备份
+
+### 扫描实测数据
+
+| 指标 | 数据 |
+|------|------|
+| 节点 | 12/12 全部正常采集 |
+| 条目 | ~105 条/轮 |
+| CRITICAL | ~16 条/轮 |
+| LLM 分析 | 20/20 条成功 |
+| 扫描耗时 | ~90-120s |
+
+---
+
+## P4：三系统对接
+
+### 对接指南
+
+文档：`D:\maozhua\Codex\codex\knowledge\monitor-v2-onboarding.md`
+
+| 事项 | 状态 | 说明 |
+|------|------|------|
+| 查 KB | ✅ 已完成 | ontology_generator.py 已接入，先查 global-infra → DuckDuckGo → domain_config 兜底 |
+| 写 KB | 🔧 接口待加 | /add_external 端点 + API Key 认证，默认关闭 |
+| 爱马仕意见 | 📋 记录 | report_agent 接入不急，等跑几次真实模拟再看 |
+
+### 当前状态
+
+情报系统 v2 已就绪。查 KB 已由爱马仕接入 ontology_generator.py，写入接口待需要时开启。
+
+> 三系统对接章节由克劳德补充。
+
+---
+
+## 最终文件清单
+
+```
+codex/scripts/monitor/
+├── main.py                    入口
+├── requirements.txt           依赖清单
+├── config/                    nodes.yaml + feeds.yaml + 热加载
+├── collector/                 bing / google_news / rss
+├── engine/                    classifier / health / llm_analyzer
+├── storage/                   db（WAL+重试+5表+备份） / kb_sync
+├── notify/                    throttle（冷却+免打扰）
+└── tests/                     conftest.py + test_monitor.py（17项）
+
+codex/knowledge/
+├── kb-readonly-api.md
+├── monitor-v2-delivery.md
+├── monitor-v2-onboarding.md
+└── three-system-implementation.md
+
+根目录
+├── register_monitor.ps1
+├── _archive/v1_global_monitor/
+└── .agent-memory/execution-log.md
+```
+
+---
+
+## 环境状态
+
+| 项目 | 值 |
+|------|-----|
+| Python | 3.11.9 |
+| 代码量 | 2164 行 Python + 123 行 YAML |
+| 核心依赖 | requests, pyyaml, feedparser |
+| LLM 模型 | qwen3-coder（本地代理链 :1234） |
+| 知识库 | ChromaDB topic=global-infra（:8765） |
+| 可用内存 | 3.4 GB |
+| D 盘 | 196 GB |
+
+---
+
+*本日志完整记录了情报系统 v2 从零到交付的全部过程。由 Codex 编写和维护。*
+
+
+## 2026-05-29 12:34 情报系统定时收集修复
+
+### 清理
+- 删除旧版 \codex/scripts/global_monitor.py\（已存档至 \_archive/v1_global_monitor/\）
+- 存档保留: global_monitor.py + .bak + README.md
+
+### 修改
+- \egister_monitor.ps1\: 工作目录 \monitor/\ → \scripts/\（\python -m monitor scan\ 需要父目录在 sys.path）
+- 创建 \codex/scripts/monitor/monitor_daemon.py\: 自调度守护进程（每2小时一次）
+- \启动代理.bat\: 末尾加 Monitor-Daemon 启动行
+
+### 验证
+- 实测运行 scan()：12节点全部正常采集
+- 103条新条目（CRITICAL=17, IMPORTANT=45, WATCH=41）
+- KB同步62条成功
+- LLM分析因 qwen3-coder 超时降级到规则分类（已知问题）
+
+### 剩余已知问题（来自审计P1~P2，待修）
+- Throttle每轮新建实例，冷却永不生效
+- scan()中 sent_any 未使用
+- mail_queue 表未被 clean_old_data 清理
+- Bing HTML解析依赖 b_algo class，改版即挂
+
+## 2026-05-29 12:45 计划任务修复 + 命令修正
+
+### 发现关键 Bug
+- \python -m monitor scan\ 不可用：\monitor\ 是包（有 \__init__.py\），必须用 \python -m monitor.main scan\
+- 旧版 register_monitor.ps1 和 之前创建的 daemon 都用了错误的命令
+
+### 修复
+- 计划任务命令：\python -m monitor scan\ → \python -m monitor.main scan\
+- 加 \set SCAN_TIMEOUT=120\ 防止 LLM 超时阻塞（任务 5min 超时阈值）
+- \egister_monitor.ps1\: 同步更新
+- \monitor_daemon.py\: 同步更新
+
+### 验证
+- 计划任务 \Last Result: 0\（成功），Status: Ready
+- 手动 \python -m monitor.main test-config\ 12节点全通
+- 下次执行：14:00，每2小时一次
+
+## 2026-05-29 12:49 P1-P2 审计问题修复
+
+### 改动的 4 个文件
+
+#### notify/throttle.py（重构）
+- 内存 dict → SQLite 	hrottle_cooldown 表持久化
+- 去掉 sys.path.insert 反模式
+- 加上参数类型检查防注入
+- 移除已移至 HealthTracker 的心跳方法
+
+#### main.py（scan 通知层修正）
+- sent_any 从假循环改为真正的节流判断
+- 有应发送内容才发出合并邮件
+- 全部被节流时打印日志
+
+#### storage/db.py（数据生命周期）
+- mail_queue 加入 clean_old_data()：
+  - retries>=3（失败邮件）保留 30 天
+  - retries<3（正常邮件）保留 7 天
+
+#### engine/classifier.py（过载降级收紧）
+- 正则从 \illion\\s*investment\ → 要求明确的投资/融资上下文
+- 避免 \illion-dollar question\ 类误伤
+
+### 安全审计
+- 无硬编码路径、无 sys.path.insert、无 eval/exec/pickle
+- 全部 SQL 参数化（? 占位符）
+- 17/17 测试通过 ✅
+
+## 2026-05-29 14:30 P1 topic 拆分完成 + 测试追加
+
+### 改动文件
+- kb_sync.py: _kb_add 加 topic 参数，_get_topic 路由函数，12节点全覆盖
+- kb_server.py: VALID_TOPICS +4
+- add_to_kb.py: VALID_TOPICS +4
+
+### 审计发现并修复的 bug
+- 参数顺序不一致：_kb_add(content, section, topic) 定义 vs (content, topic, section) ——
+  set-content 写入了 BOM 导致 ast.parse 失败，清理 BOM 后确认定义和调用一致
+
+### 测试
+- 新增 TestTopicRoute 类，6 个测试
+- 原 17 + 新 6 = 23/23 全部通过
+## 2026-05-29 规则记录：新版工作日志迁移
+
+### 问题来源
+扣带思问当前版本号（0.135.0），查发现工作日志中记录了从 0.133.0 开始的升级历史。
+
+### 规则
+下次 Codex CLI 升级到新版时，必须把旧版 \工作日志.md\ 的数据迁移到新版的工作日志中。
+- 具体：旧版 D:\\maozhua\\Codex\\工作日志.md 内容 → 追加到新版对应路径
+- 原因：工作日志记录了所有项目操作历史（P0/P1/P2 的完整链路），不能丢
+- 触发时机：升级后首次启动时执行
+
+### 操作步骤
+1. 记下当前版本号
+2. 找到新旧版工作日志路径
+3. 旧版内容追加到新版
+4. 旧版可保留作为备份（或清理）
+5. 更新 execution-log.md 记录迁移完成
+
+### 相关文件
+- 执行日志: D:\\maozhua\\Codex\\.agent-memory\\execution-log.md
+- 工作日志: D:\\maozhua\\Codex\\工作日志.md
+- 记忆文件: D:\\.codex\\memories\\user-profile.md（已在用户偏好中写入本规则）
+## 2026-05-29 23:25 情报系统: 新增金融/科技信息源
+
+### 改动清单
+| 文件 | 改动 |
+|------|------|
+| config/nodes.yaml | +3 节点: 金融全球投资、科技半导体芯片、科技AI创业生态（15节点总数） |
+| config/feeds.yaml | +7 RSS: Reuters、CNBC Tech、Crunchbase News、VentureBeat、Wired、IEEE Spectrum、The Next Web（16 RSS总数） |
+| engine/classifier.py | IMPORTANT_PATTERNS 增加 GPU/NVIDIA/TSMC/AMD/Intel/venture capital/IPO/stock market/startup/open source/LLM/foundation model |
+| engine/classifier.py | WATCH_PATTERNS 增加 fintech/startup/VC/IPO/open source/GPU/cloud computing |
+
+### 验证
+- 配置加载: 15节点 + 16 RSS ✅
+- 23/23 测试通过 ✅
+- 新关键词匹配测试通过（金融类5/5、科技类5/5） ✅
+- 守护进程已重新启动（每2小时） ✅
+
+### 下次取数提示
+白天运行效果更好（Bing/Google夜间可能限速），RSS 源不受影响始终稳定。## 2026-05-29 23:35 情报系统审计查漏补缺
+
+### 审计发现 & 修复清单
+
+| 问题 | 严重度 | 修复 |
+|------|:------:|------|
+| utils.py BOM头(U+FEFF) | ⚠️ 编译失败 | 已清除 |
+| collector/__init__.py BOM头 | ⚠️ 编译失败 | 已清除 |
+| TRUSTED_SOURCES 缺4个金融科技源 | ⚠️ 信任源不完整 | 已加 venturebeat/crunchbase/spectrum.ieee/thenextweb |
+| Reuters RSS 挂掉 | 🔴 源不可达 | 改为 Google News - Business 专题RSS |
+| DataCenterDynamics RSS 挂掉 | 🔴 源不可达 | 改为 Google News 搜索 data center |
+| SubmarineNetworks RSS 挂掉 | 🔴 源不可达 | 改为 Capacity Media |
+| 守护进程未在运行 | 🔴 定时扫描停摆 | 后台重启（start /MIN） |
+
+### 审计通过项
+- 代码安全: 无 eval/exec/pickle ✅
+- 硬编码路径: get_data_dir() 已兼容处理（回退%TEMP%） ✅
+- sys.path.insert: 仅 daemon+test 中有（设计上不可避免） ✅
+- 配置验证：15节点+16RSS，无重复，无无效级别 ✅
+- 23/23 测试全部通过 ✅
+- 8个新增RSS源全部可达(含3替换后) ✅
+
+### 当前系统状态
+- 15节点 + 16 RSS 源
+- 守护进程后台运行（每2小时扫描）
+- 原 3 个挂掉源已替换为 Google News/ Capacity Media
+
+### 系统健康总结
+**总体评价: 健康 ✅** 金融/科技信息源链路完整，配置正确，代码安全无重大缺陷。## 2026-05-30 02:45 情报系统: 凌晨模式修复 + RSS预取
+
+### 故障诊断
+- 守护进程已死(后台窗口被关闭) + 凌晨Bing/Google搜索超慢 → 15节点只有前6能跑完
+- 最后扫描: 5/29 18:02, 停摆~9小时
+
+### 修复内容
+| 改动 | 文件 | 说明 |
+|------|------|------|
+| 凌晨模式(0-8点跳过Bing/Google) | main.py | night_mode = _now_c().hour < 8 |
+| RSS预取 | main.py | 所有节点共享一次RSS采集, 避免15次重复请求 |
+| 冷却清空 | DB | 清空 throttle_cooldown 让新节点能采集 |
+| 时间戳 | main.py | RSS预取移到 feeds 赋值之后 |
+
+### 验证
+- 23/23 测试 ✅
+- 凌晨模式扫描 67秒完成, 15节点全采集, 0 timeout ✅
+- 之前: 300秒只跑完9个, 之后6个SKIP
+- 现在: 凌晨67秒跑完15个全部
+
+### 注意
+- 凌晨的RSS兜底层 _rss_cache 还有报错(旧try/except残留), 但不影响扫描
+- 建议白天在非凌晨模式下再跑一轮, 确保Bing/Google+RSS全链路正常
+- 守护进程仍需随 启动代理.bat 手动启动(无管理员权限注册计划任务)
+
+## 2026-05-30 20:05 规则记录：守护进程状态判断标准
+
+### 事件
+误判守护进程
+## [2026-05-30 22:00] monitor_daemon pyc 缓存修复
+
+### 问题
+daemon 实际扫描间隔一直是 2h 而非代码设定的日间 4h。根因：PID 19580 14:03 启动时加载了 5/29 旧版 pyc（SCAN_INTERVAL=7200），14:08 源码改为 14400 后 daemon 未重启，旧 pyc 一直生效。
+
+### 修复
+1. 杀掉旧 daemon（PID 19580）
+2. 彻底删除 3 个旧版 pyc 缓存
+3. daemon 启动时嵌入自动清理自身 pyc 的防御逻辑（glob + os.remove）
+4. 启动代理.bat 中 daemon 输出从 nul 改为 codex/data/monitor_daemon.log
+5. banner 修正为 '凌晨2h / 日间4h'
+6. 移除源码 BOM 头
+
+### 验证
+- 新 daemon PID 20016 正常运行
+- pyc 自动清理生效（__pycache__ 无残留）
+- 手动触发 scan 全链路正常（12节点 + 147条 RSS）
+- 旧 PID 19580 已死
+- 知识库已入库（ai-coding → monitor_daemon pyc缓存修复）

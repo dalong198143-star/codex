@@ -1,113 +1,146 @@
 general_settings:
+  master_key: sk-litellm-master-2026
   disable_master_key_return: true
-
+  disable_spend_logs: true
+  disable_spend_updates: true
+  allow_requests_on_db_unavailable: true
 model_list:
-  # ── DeepSeek Chat (主力，非思考模式，多轮OK) ──
-  - model_name: deepseek-v4
-    litellm_params:
-      model: deepseek/deepseek-chat
-      api_key: os.environ/DEEPSEEK_API_KEY
-      rpm: 500
-    model_info:
-      mode: chat
-      max_tokens: 65536
-      supports_function_calling: true
-      supports_vision: false
-
-  # ── DeepSeek V4 Flash (思考模式，单轮用) ──
-  - model_name: deepseek-v4-flash
-    litellm_params:
-      model: deepseek/deepseek-v4-flash
-      api_key: os.environ/DEEPSEEK_API_KEY
-      rpm: 1000
-    model_info:
-      mode: chat
-      max_tokens: 65536
-      supports_function_calling: true
-      supports_vision: false
-
-  # ── DeepSeek V4 Pro (深度推理，单轮用) ──
-  - model_name: deepseek-v4-pro
-    litellm_params:
-      model: deepseek/deepseek-v4-pro
-      api_key: os.environ/DEEPSEEK_API_KEY
-      rpm: 500
-    model_info:
-      mode: chat
-      max_tokens: 65536
-      supports_function_calling: true
-      supports_vision: false
-
-  - model_name: deepseek-r1
-    litellm_params:
-      model: deepseek/deepseek-reasoner
-      api_key: os.environ/DEEPSEEK_API_KEY
-      rpm: 100
-    model_info:
-      mode: chat
-      max_tokens: 65536
-      supports_function_calling: false
-
-  # ── 智谱 GLM ──
-  - model_name: glm-5.1
-    litellm_params:
-      model: openai/glm-4.6
-      api_base: https://open.bigmodel.cn/api/paas/v4
-      api_key: os.environ/ZHIPU_API_KEY
-      rpm: 300
-    model_info:
-      mode: chat
-      max_tokens: 131072
-      supports_function_calling: true
-      supports_vision: true
-
-  - model_name: glm-4-flash
-    litellm_params:
-      model: openai/glm-4-flash
-      api_base: https://open.bigmodel.cn/api/paas/v4
-      api_key: os.environ/ZHIPU_API_KEY
-      rpm: 1000
-    model_info:
-      mode: chat
-      max_tokens: 131072
-      supports_function_calling: true
-
-  # ── Moonshot Kimi ──
-  - model_name: kimi-k2.6
-    litellm_params:
-      model: openai/moonshot-v1-128k
-      api_base: https://api.moonshot.cn/v1
-      api_key: os.environ/MOONSHOT_API_KEY
-      rpm: 300
-    model_info:
-      mode: chat
-      max_tokens: 131072
-      supports_function_calling: true
-
-  # ── 通义千问 Qwen ──
-  - model_name: qwen3-coder
-    litellm_params:
-      model: openai/qwen-coder-plus
-      api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
-      api_key: os.environ/DASHSCOPE_API_KEY
-      rpm: 300
-    model_info:
-      mode: chat
-      max_tokens: 131072
-      supports_function_calling: true
-
+- model_name: deepseek-v4
+  litellm_params:
+    model: deepseek/deepseek-chat
+    api_key: sk-673f66be4fc94e2a86089df5500feeda
+    rpm: 500
+  model_info:
+    mode: chat
+    max_tokens: 65536
+    supports_function_calling: true
+    supports_vision: false
+- model_name: deepseek-v4-flash
+  litellm_params:
+    model: deepseek/deepseek-v4-flash
+    api_key: sk-673f66be4fc94e2a86089df5500feeda
+    rpm: 1000
+  model_info:
+    mode: chat
+    max_tokens: 65536
+    supports_function_calling: true
+    supports_vision: false
+- model_name: deepseek-v4-pro
+  litellm_params:
+    model: deepseek/deepseek-v4-pro
+    api_key: sk-673f66be4fc94e2a86089df5500feeda
+    rpm: 500
+  model_info:
+    mode: chat
+    max_tokens: 65536
+    supports_function_calling: true
+    supports_vision: false
+- model_name: deepseek-r1
+  litellm_params:
+    model: deepseek/deepseek-reasoner
+    api_key: sk-673f66be4fc94e2a86089df5500feeda
+    rpm: 100
+  model_info:
+    mode: chat
+    max_tokens: 65536
+    supports_function_calling: false
+- model_name: glm-5.1
+  litellm_params:
+    model: openai/glm-4.6
+    api_base: https://open.bigmodel.cn/api/paas/v4
+    api_key: os.environ/ZHIPU_API_KEY
+    rpm: 300
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
+    supports_vision: true
+- model_name: glm-4-flash
+  litellm_params:
+    model: openai/glm-4-flash
+    api_base: https://open.bigmodel.cn/api/paas/v4
+    api_key: os.environ/ZHIPU_API_KEY
+    rpm: 1000
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
+- model_name: kimi-k2.6
+  litellm_params:
+    model: openai/moonshot-v1-128k
+    api_base: https://api.moonshot.cn/v1
+    api_key: os.environ/MOONSHOT_API_KEY
+    rpm: 300
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
+- model_name: qwen3-coder
+  litellm_params:
+    model: openai/qwen-coder-plus
+    api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key: os.environ/DASHSCOPE_API_KEY
+    rpm: 300
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
+- model_name: qwen-vl-plus
+  litellm_params:
+    model: openai/qwen-vl-plus
+    api_base: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key: os.environ/DASHSCOPE_API_KEY
+    rpm: 100
+  model_info:
+    mode: chat
+    supports_vision: true
+    supports_function_calling: true
+    max_tokens: 131072
+- model_name: xiaomi-mimo-v2.5-pro
+  litellm_params:
+    model: openai/mimo-v2.5-pro
+    api_base: https://api.xiaomimimo.com/v1
+    api_key: sk-clfha6n04vwgb33imlzemee28zfmgge4lqmy6p1l978opkop
+    rpm: 300
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
+- model_name: xiaomi-mimo-v2.5
+  litellm_params:
+    model: openai/mimo-v2.5
+    api_base: https://api.xiaomimimo.com/v1
+    api_key: sk-clfha6n04vwgb33imlzemee28zfmgge4lqmy6p1l978opkop
+    rpm: 1000
+  model_info:
+    mode: chat
+    max_tokens: 131072
+    supports_function_calling: true
 litellm_settings:
   num_retries: 3
   request_timeout: 120
   fallbacks:
-    - deepseek-v4: [glm-5.1, kimi-k2.6]
-    - deepseek-v4-pro: [deepseek-v4, glm-5.1]
-    - glm-5.1: [deepseek-v4, kimi-k2.6]
-    - kimi-k2.6: [deepseek-v4, glm-5.1]
+  - deepseek-v4-flash:
+    - xiaomi-mimo-v2.5
+  - deepseek-v4:
+    - xiaomi-mimo-v2.5-pro
+  - deepseek-v4-pro:
+    - deepseek-v4
+    - xiaomi-mimo-v2.5-pro
+  - glm-5.1:
+    - kimi-k2.6
+  - kimi-k2.6:
+    - glm-5.1
+  - qwen-vl-plus:
+    - glm-5.1
+  - qwen3-coder:
+    - glm-5.1
+    - kimi-k2.6
+    - xiaomi-mimo-v2.5-pro
+    - xiaomi-mimo-v2.5
   set_verbose: false
-
 router_settings:
-  routing_strategy: "latency-based-routing"
+  routing_strategy: latency-based-routing
   enable_pre_call_checks: false
   allowed_fails: 10
   cooldown_time: 5

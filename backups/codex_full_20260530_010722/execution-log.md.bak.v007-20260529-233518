@@ -1,0 +1,345 @@
+﻿# 情报系统 v2 — 施工日志
+
+> **作者**: Codex（主笔）— 本日志由 Codex 编写和维护。除三系统对接章节外，所有代码、测试、文档均为 Codex 完成。
+> **版本**: 2.0.0
+> **日期**: 2026-05-28 ~ 2026-05-29
+> **代码**: `D:\maozhua\Codex\codex\scripts\monitor\`
+> **知识库**: ChromaDB topic=global-infra（端口 8765）
+> **审计**: 克劳德（三轮审计，5/5 通过）、爱马仕（确认文档）
+> **对接**: 米罗鱼二世（方案就绪）
+
+---
+
+## 项目背景
+
+原有 `global_monitor.py`（v1）只有 Bing + Google News 两个数据源，纯正则匹配，
+邮件链接截断 50 字符导致 400 错误，CRITICAL 级别过载（"billion investment" 每条都标关键），
+无系统自检，DB 跑在 `%TEMP%` 随时被清。
+
+用户要求重写为模块化架构，覆盖 24 项审查发现的问题。
+
+---
+
+## 最终架构
+
+```
+采集层 → 过滤层 → 推演层(LLM) → 存储层 → 通知层
+                  ↘ 降级: 纯规则分类
+```
+
+| 层 | 模块 | 职责 |
+|----|------|------|
+| 采集 | `collector/bing.py` | Bing 搜索 HTML 解析 |
+| 采集 | `collector/google_news.py` | Google News RSS（备源） |
+| 采集 | `collector/rss.py` | feedparser 解析 9 个 RSS（兜底源） |
+| 过滤 | `engine/classifier.py` | 多标签分类 + CRITICAL 过载防护 + 质量评分 |
+| 推演 | `engine/llm_analyzer.py` | LLM 批量分析：中文摘要 + 重要性星级 + 互斥锁防积压 |
+| 存储 | `storage/db.py` | SQLite WAL + 重试 + 5 表 + 邮件队列 + 备份 |
+| 存储 | `storage/kb_sync.py` | CRITICAL+IMPORTANT 自动写入 ChromaDB |
+| 通知 | `notify/throttle.py` | CRITICAL 强制通知 / IMPORTANT 冷却+免打扰 / WATCH 汇总 |
+
+---
+
+## P0：地基（00:30 ~ 01:05）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| 目录结构 + 配置外部化 | ✅ | 五模块架构，nodes.yaml(12节点) + feeds.yaml(9RSS) |
+| 持久化路径修正 | ✅ | SQLite WAL + 重试 + 5 表 + mail_queue + health，路径自动回退 |
+| 静默故障检测 + 心跳 | ✅ | 节点3次0结果告警、源3次失败告警、每4h心跳 |
+| 多标签分类 + CRITICAL 过载 | ✅ | `billion investment` 降级、8场景测试通过 |
+| 免打扰策略 + 兜底源 | ✅ | CRITICAL强制、IMPORTANT冷却+免打扰、WATCH汇总、RSS兜底 |
+| 主流程集成 | ✅ | scan / test-config / heartbeat / clean 四个命令 |
+
+P0 审查修复：采集层 except:pass → log_health()、90s 超时→180s 可配、全部文件去除 BOM
+
+---
+
+## P1：增强（01:05 ~ 01:23）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| LLM 批量分析 | ✅ | qwen3-coder批量摘要+重要性星级、4种JSON降级解析、互斥锁 |
+| SMTP 连通性测试 | ✅ | test-config 主动发测试邮件验证链路 |
+| 时区统一 | ✅ | Asia/Shanghai UTC+8，全部 datetime 替换为 _now() |
+
+---
+
+## P2：生产化（01:35 ~ 01:50）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| KB 同步集成 | ✅ | CRITICAL+IMPORTANT → ChromaDB global-infra，自动启动 kb_server |
+| SQLite 并发锁加固 | ✅ | WAL + 5次重试 + 指数退避 |
+| 配置热加载 | ✅ | 每轮 force_reload=True，改YAML即生效 |
+| 备份机制 | ✅ | SQL dump，保留7份，cmd_clean 集成 |
+
+---
+
+## P3：收尾（02:10 ~ 02:27）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| SMTP 密码安全 | ✅ | icacls 仅管理员+SYSTEM 可读 |
+| 计划任务脚本 | ✅ | register_monitor.ps1（每2h，SYSTEM账户） |
+| requirements.txt | ✅ | requests / pyyaml / feedparser |
+| 清理 v1 旧代码 | ✅ | → _archive/v1_global_monitor/ |
+
+---
+
+## P4：三系统对接（05-29）
+
+| 任务 | 状态 | 内容 |
+|------|------|------|
+| 对接指南编写 | ✅ | monitor-v2-onboarding.md，含查KB/写KB接口说明 |
+| 实施方案编写 | ✅ | three-system-implementation.md，含分工/数据流/风险 |
+| 克劳德审计对接文档 | ✅ | 确认通过 |
+| 爱马仕审阅对接方案 | ✅ | 确认方案合理，建议先跑模拟再接入 |
+| /add_external 接口 | 🔧 待实施 | kb_server.py 加端点 + API Key 认证，默认关闭 |
+
+---
+
+## 审计记录
+
+### 克劳德审计
+
+| 轮次 | 问题 | 处理 | 状态 |
+|:----:|------|------|:----:|
+| 首轮 | 4 严重 + 4 中等 + 4 轻微 | 测试文件/PATH/BOM/时区/archive 全部修复 | ✅ |
+| 复检 | 3/5 过，2/5 疑点澄清 | 补 README、修正函数名 | ✅ |
+| 终检 | 署名/编号/头部描述 | 三项全部修正 | ✅ |
+| **结论** | | **三轮审计，5/5 通过** | **✅** |
+
+### 爱马仕审阅
+
+- 确认对接文档清晰
+- 建议 report_agent 接入不急，等跑几次真实模拟再看质量
+- 写入接口先预留，不急着开
+
+---
+
+## 测试结果
+
+### 手工验证（87 项）
+
+| 模块 | 检查点 | 结果 |
+|------|--------|------|
+| 语法+BOM | 16 文件 | ✅ |
+| 模块导入 | 11 模块 | ✅ |
+| 配置 | 12节点+9Feed+验证 | ✅ |
+| 多标签分类 | 8场景+2过载+6边界 | ✅ |
+| LLM 分析 | 10项（含真实API调用） | ✅ |
+| 健康检测 | 5项 | ✅ |
+| 免打扰+冷却 | 5项 | ✅ |
+| 数据库 | 11项 | ✅ |
+| KB 同步 | 3项 | ✅ |
+| test-config+clean | 2项 | ✅ |
+| 时区 | 1项 | ✅ |
+| 完整扫描 | 6项 | ✅ |
+
+### pytest 自动化测试（17 项）
+
+```
+17 passed in 0.74s
+```
+覆盖：分类 / LLM 解析 / 健康检测 / 节流 / 数据库 / 备份
+
+### 扫描实测数据
+
+| 指标 | 数据 |
+|------|------|
+| 节点 | 12/12 全部正常采集 |
+| 条目 | ~105 条/轮 |
+| CRITICAL | ~16 条/轮 |
+| LLM 分析 | 20/20 条成功 |
+| 扫描耗时 | ~90-120s |
+
+---
+
+## P4：三系统对接
+
+### 对接指南
+
+文档：`D:\maozhua\Codex\codex\knowledge\monitor-v2-onboarding.md`
+
+| 事项 | 状态 | 说明 |
+|------|------|------|
+| 查 KB | ✅ 已完成 | ontology_generator.py 已接入，先查 global-infra → DuckDuckGo → domain_config 兜底 |
+| 写 KB | 🔧 接口待加 | /add_external 端点 + API Key 认证，默认关闭 |
+| 爱马仕意见 | 📋 记录 | report_agent 接入不急，等跑几次真实模拟再看 |
+
+### 当前状态
+
+情报系统 v2 已就绪。查 KB 已由爱马仕接入 ontology_generator.py，写入接口待需要时开启。
+
+> 三系统对接章节由克劳德补充。
+
+---
+
+## 最终文件清单
+
+```
+codex/scripts/monitor/
+├── main.py                    入口
+├── requirements.txt           依赖清单
+├── config/                    nodes.yaml + feeds.yaml + 热加载
+├── collector/                 bing / google_news / rss
+├── engine/                    classifier / health / llm_analyzer
+├── storage/                   db（WAL+重试+5表+备份） / kb_sync
+├── notify/                    throttle（冷却+免打扰）
+└── tests/                     conftest.py + test_monitor.py（17项）
+
+codex/knowledge/
+├── kb-readonly-api.md
+├── monitor-v2-delivery.md
+├── monitor-v2-onboarding.md
+└── three-system-implementation.md
+
+根目录
+├── register_monitor.ps1
+├── _archive/v1_global_monitor/
+└── .agent-memory/execution-log.md
+```
+
+---
+
+## 环境状态
+
+| 项目 | 值 |
+|------|-----|
+| Python | 3.11.9 |
+| 代码量 | 2164 行 Python + 123 行 YAML |
+| 核心依赖 | requests, pyyaml, feedparser |
+| LLM 模型 | qwen3-coder（本地代理链 :1234） |
+| 知识库 | ChromaDB topic=global-infra（:8765） |
+| 可用内存 | 3.4 GB |
+| D 盘 | 196 GB |
+
+---
+
+*本日志完整记录了情报系统 v2 从零到交付的全部过程。由 Codex 编写和维护。*
+
+
+## 2026-05-29 12:34 情报系统定时收集修复
+
+### 清理
+- 删除旧版 \codex/scripts/global_monitor.py\（已存档至 \_archive/v1_global_monitor/\）
+- 存档保留: global_monitor.py + .bak + README.md
+
+### 修改
+- \egister_monitor.ps1\: 工作目录 \monitor/\ → \scripts/\（\python -m monitor scan\ 需要父目录在 sys.path）
+- 创建 \codex/scripts/monitor/monitor_daemon.py\: 自调度守护进程（每2小时一次）
+- \启动代理.bat\: 末尾加 Monitor-Daemon 启动行
+
+### 验证
+- 实测运行 scan()：12节点全部正常采集
+- 103条新条目（CRITICAL=17, IMPORTANT=45, WATCH=41）
+- KB同步62条成功
+- LLM分析因 qwen3-coder 超时降级到规则分类（已知问题）
+
+### 剩余已知问题（来自审计P1~P2，待修）
+- Throttle每轮新建实例，冷却永不生效
+- scan()中 sent_any 未使用
+- mail_queue 表未被 clean_old_data 清理
+- Bing HTML解析依赖 b_algo class，改版即挂
+
+## 2026-05-29 12:45 计划任务修复 + 命令修正
+
+### 发现关键 Bug
+- \python -m monitor scan\ 不可用：\monitor\ 是包（有 \__init__.py\），必须用 \python -m monitor.main scan\
+- 旧版 register_monitor.ps1 和 之前创建的 daemon 都用了错误的命令
+
+### 修复
+- 计划任务命令：\python -m monitor scan\ → \python -m monitor.main scan\
+- 加 \set SCAN_TIMEOUT=120\ 防止 LLM 超时阻塞（任务 5min 超时阈值）
+- \egister_monitor.ps1\: 同步更新
+- \monitor_daemon.py\: 同步更新
+
+### 验证
+- 计划任务 \Last Result: 0\（成功），Status: Ready
+- 手动 \python -m monitor.main test-config\ 12节点全通
+- 下次执行：14:00，每2小时一次
+
+## 2026-05-29 12:49 P1-P2 审计问题修复
+
+### 改动的 4 个文件
+
+#### notify/throttle.py（重构）
+- 内存 dict → SQLite 	hrottle_cooldown 表持久化
+- 去掉 sys.path.insert 反模式
+- 加上参数类型检查防注入
+- 移除已移至 HealthTracker 的心跳方法
+
+#### main.py（scan 通知层修正）
+- sent_any 从假循环改为真正的节流判断
+- 有应发送内容才发出合并邮件
+- 全部被节流时打印日志
+
+#### storage/db.py（数据生命周期）
+- mail_queue 加入 clean_old_data()：
+  - retries>=3（失败邮件）保留 30 天
+  - retries<3（正常邮件）保留 7 天
+
+#### engine/classifier.py（过载降级收紧）
+- 正则从 \illion\\s*investment\ → 要求明确的投资/融资上下文
+- 避免 \illion-dollar question\ 类误伤
+
+### 安全审计
+- 无硬编码路径、无 sys.path.insert、无 eval/exec/pickle
+- 全部 SQL 参数化（? 占位符）
+- 17/17 测试通过 ✅
+
+## 2026-05-29 14:30 P1 topic 拆分完成 + 测试追加
+
+### 改动文件
+- kb_sync.py: _kb_add 加 topic 参数，_get_topic 路由函数，12节点全覆盖
+- kb_server.py: VALID_TOPICS +4
+- add_to_kb.py: VALID_TOPICS +4
+
+### 审计发现并修复的 bug
+- 参数顺序不一致：_kb_add(content, section, topic) 定义 vs (content, topic, section) ——
+  set-content 写入了 BOM 导致 ast.parse 失败，清理 BOM 后确认定义和调用一致
+
+### 测试
+- 新增 TestTopicRoute 类，6 个测试
+- 原 17 + 新 6 = 23/23 全部通过
+## 2026-05-29 规则记录：新版工作日志迁移
+
+### 问题来源
+扣带思问当前版本号（0.135.0），查发现工作日志中记录了从 0.133.0 开始的升级历史。
+
+### 规则
+下次 Codex CLI 升级到新版时，必须把旧版 \工作日志.md\ 的数据迁移到新版的工作日志中。
+- 具体：旧版 D:\\maozhua\\Codex\\工作日志.md 内容 → 追加到新版对应路径
+- 原因：工作日志记录了所有项目操作历史（P0/P1/P2 的完整链路），不能丢
+- 触发时机：升级后首次启动时执行
+
+### 操作步骤
+1. 记下当前版本号
+2. 找到新旧版工作日志路径
+3. 旧版内容追加到新版
+4. 旧版可保留作为备份（或清理）
+5. 更新 execution-log.md 记录迁移完成
+
+### 相关文件
+- 执行日志: D:\\maozhua\\Codex\\.agent-memory\\execution-log.md
+- 工作日志: D:\\maozhua\\Codex\\工作日志.md
+- 记忆文件: D:\\.codex\\memories\\user-profile.md（已在用户偏好中写入本规则）
+## 2026-05-29 23:25 情报系统: 新增金融/科技信息源
+
+### 改动清单
+| 文件 | 改动 |
+|------|------|
+| config/nodes.yaml | +3 节点: 金融全球投资、科技半导体芯片、科技AI创业生态（15节点总数） |
+| config/feeds.yaml | +7 RSS: Reuters、CNBC Tech、Crunchbase News、VentureBeat、Wired、IEEE Spectrum、The Next Web（16 RSS总数） |
+| engine/classifier.py | IMPORTANT_PATTERNS 增加 GPU/NVIDIA/TSMC/AMD/Intel/venture capital/IPO/stock market/startup/open source/LLM/foundation model |
+| engine/classifier.py | WATCH_PATTERNS 增加 fintech/startup/VC/IPO/open source/GPU/cloud computing |
+
+### 验证
+- 配置加载: 15节点 + 16 RSS ✅
+- 23/23 测试通过 ✅
+- 新关键词匹配测试通过（金融类5/5、科技类5/5） ✅
+- 守护进程已重新启动（每2小时） ✅
+
+### 下次取数提示
+白天运行效果更好（Bing/Google夜间可能限速），RSS 源不受影响始终稳定。

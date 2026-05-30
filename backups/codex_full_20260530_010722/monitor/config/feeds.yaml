@@ -1,0 +1,85 @@
+# RSS / Atom Feed 订阅源
+# 支持 feedparser 兼容的任何 feed 格式
+
+feeds:
+  - name: "DCD Magazine (via Google News)"
+    url: "https://news.google.com/rss/search?q=data+center&hl=en-US&gl=US&ceid=US:en"
+    tags: [dc, infra]
+    enabled: true
+
+  - name: "LightReading"
+    url: "https://www.lightreading.com/rss.xml"
+    tags: [telecom, infra]
+    enabled: true
+
+  - name: "Capacity Media"
+    url: "https://www.capacitymedia.com/rss"
+    tags: [cable, infra]
+    enabled: true
+
+  - name: "Cloudflare Blog"
+    url: "https://blog.cloudflare.com/rss/"
+    tags: [cdn, security, infra]
+    enabled: true
+
+  - name: "Internet Society"
+    url: "https://www.internetsociety.org/blog/feed/"
+    tags: [policy, ixp]
+    enabled: true
+
+  - name: "TechCrunch"
+    url: "https://techcrunch.com/feed/"
+    tags: [tech, ai]
+    enabled: true
+
+  - name: "ArsTechnica"
+    url: "https://arstechnica.com/feed/"
+    tags: [tech, science]
+    enabled: true
+
+  - name: "The Verge"
+    url: "https://www.theverge.com/rss/index.xml"
+    tags: [tech, ai]
+    enabled: true
+
+  - name: "EFF (电子前哨基金会)"
+    url: "https://www.eff.org/rss/updates.xml"
+    tags: [policy, privacy]
+    enabled: true
+
+  # === 新增金融类权威源 ===
+  - name: "Google News - Business"
+    url: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnVHZ0pWVXlnQVAB"
+    tags: [finance, global]
+    enabled: true
+
+  - name: "CNBC Tech"
+    url: "https://www.cnbc.com/id/10001147/device/rss/rss.html"
+    tags: [finance, tech]
+    enabled: true
+
+  - name: "Crunchbase News"
+    url: "https://news.crunchbase.com/feed/"
+    tags: [finance, startup, vc]
+    enabled: true
+
+  # === 新增科技类深度源 ===
+  - name: "VentureBeat"
+    url: "https://venturebeat.com/feed/"
+    tags: [tech, ai]
+    enabled: true
+
+  - name: "Wired"
+    url: "https://www.wired.com/feed/rss"
+    tags: [tech, science]
+    enabled: true
+
+  - name: "IEEE Spectrum"
+    url: "https://spectrum.ieee.org/feed/rss"
+    tags: [tech, semiconductor, engineering]
+    enabled: true
+
+  - name: "The Next Web"
+    url: "https://thenextweb.com/feed"
+    tags: [tech, europe]
+    enabled: true

@@ -1,0 +1,15 @@
+﻿# 情报系统 v2 — Python 依赖
+# 安装: pip install -r requirements.txt
+
+# 核心
+requests>=2.31.0
+pyyaml>=6.0
+feedparser>=6.0
+
+# LLM 分析（通过 HTTP，不需要 openai SDK，但备选）
+# openai>=1.0
+
+# 系统监控（可选，仅用于内存审计）
+# psutil>=5.9
+
+# 知识库同步（仅 HTTP 调用，无额外依赖）
